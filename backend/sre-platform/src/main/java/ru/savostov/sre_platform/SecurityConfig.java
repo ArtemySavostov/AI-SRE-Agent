@@ -1,6 +1,9 @@
 package ru.savostov.sre_platform;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,22 +50,31 @@ public class SecurityConfig {
                                           DaoAuthenticationProvider authenticationProvider) throws Exception {
         http
                 .authenticationProvider(authenticationProvider)
+                .requestCache(cache -> cache.requestCache(new NullRequestCache()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/css/**", "/js/**",
-                                "/images/**", "/register", "/error").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((request, response, exception) ->
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED))
+                        .accessDeniedHandler((request, response, exception) ->
+                                response.setStatus(HttpServletResponse.SC_FORBIDDEN)))
                 .formLogin(form -> form
-                        .loginPage("/login")
+                        .loginProcessingUrl("/api/auth/login")
                         .usernameParameter("email")
-                        .permitAll()
-                        .defaultSuccessUrl("/home", true)
-                        .failureUrl("/login?error=true")
+                        .successHandler((request, response, authentication) ->
+                                response.setStatus(HttpServletResponse.SC_NO_CONTENT))
+                        .failureHandler((request, response, exception) ->
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED))
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
-                        .permitAll());
+                        .logoutUrl("/api/auth/logout")
+                        .deleteCookies("JSESSIONID")
+                        .logoutSuccessHandler((request, response, authentication) ->
+                                response.setStatus(HttpServletResponse.SC_NO_CONTENT)));
 
         return http.build();
     }
