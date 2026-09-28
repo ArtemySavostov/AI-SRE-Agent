@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { currentUser, login, logout, register } from './api'
 import type { User } from './api'
 import './App.css'
+import ProfilePage from './ProfilePage'
 
 type Page = 'login' | 'register'
 const initialPage = (): Page => window.location.pathname === '/register' ? 'register' : 'login'
@@ -21,10 +22,18 @@ function App() {
 
   useEffect(() => {
     let active = true
-    currentUser().then(value => { if (active) setUser(value) })
+    currentUser().then(value => {
+      if (!active) return
+      setUser(value)
+      if (value) window.history.replaceState({}, '', '/profile')
+      else if (window.location.pathname !== '/register') {
+        window.history.replaceState({}, '', '/login')
+        setPage('login')
+      }
+    })
       .catch(() => { if (active) setError('Не удалось связаться с сервером. Формы доступны, но для входа нужен работающий backend.') })
       .finally(() => { if (active) setLoading(false) })
-    const onPop = () => { setPage(initialPage()); setError(''); setNotice(''); setVisible(false) }
+    const onPop = () => { window.location.reload() }
     window.addEventListener('popstate', onPop)
     return () => { active = false; window.removeEventListener('popstate', onPop) }
   }, [])
@@ -52,6 +61,8 @@ function App() {
         form.reset(); setPage('login'); setVisible(false)
         window.history.replaceState({}, '', '/login')
         setNotice('Аккаунт создан. Войдите с вашим email и паролем.')
+        const signedIn = await login(email, password)
+        setUser(signedIn); setNotice(''); window.history.replaceState({}, '', '/profile')
       } else {
         const signedIn = await login(email, password)
         form.reset(); setUser(signedIn); window.history.replaceState({}, '', '/profile')
@@ -66,9 +77,12 @@ function App() {
     finally { setBusy(false) }
   }
 
+  if (loading) return <div className="app-shell"><main className="loading" role="status"><span className="spinner"/> Проверяем сессию…</main></div>
+  if (user) return <ProfilePage user={user} busy={busy} error={error} onSignOut={signOut}/>
+
   return <div className="app-shell">
     <header className="topbar"><a className="brand" href={user ? '/profile' : '/login'}><Mark/><span>SRE<span className="brand-light"> PLATFORM</span></span></a><span className="topbar-caption">INFRASTRUCTURE INTELLIGENCE</span><span className="edition">WORKSPACE</span></header>
-    <main className={`workspace ${user ? 'workspace-profile' : ''}`}>
+    <main className="workspace">
       <aside className="story">
         <div className="eyebrow"><span className="tiny-square"/> ОТ СИГНАЛА К РЕШЕНИЮ</div>
         <h1>Инфраструктура.<br/>Под вашим<br/><span>контролем.</span></h1>
@@ -80,13 +94,8 @@ function App() {
         </div>
         <div className="story-note"><span aria-hidden="true">◇</span><p>AI исследует. Вы принимаете решения.<br/><strong>Действия — в рамках ваших политик.</strong></p></div>
       </aside>
-      <section className="access" aria-label={user ? 'Профиль пользователя' : 'Авторизация'}>
-        {loading ? <div className="loading" role="status"><span className="spinner"/> Проверяем сессию…</div> : user ? <div className="auth-card profile-card">
-          <div className="eyebrow">ВАШЕ РАБОЧЕЕ ПРОСТРАНСТВО</div><div className="avatar">{user.name.slice(0, 1).toUpperCase()}</div><h2>Здравствуйте, {user.name}</h2><p className="subtitle">Вы вошли в SRE Platform.</p>
-          <dl className="profile-details"><div><dt>Имя</dt><dd>{user.name}</dd></div><div><dt>Email</dt><dd>{user.email}</dd></div><div><dt>Роль</dt><dd><span className="role-badge">{user.role === 'ADMIN' ? 'Администратор' : 'Инженер'}</span></dd></div></dl>
-          {error && <div className="message error" role="alert">{error}</div>}
-          <button className="secondary-button" onClick={signOut} disabled={busy}>{busy ? 'Выходим…' : 'Выйти из аккаунта'}</button>
-        </div> : <div className="auth-card">
+      <section className="access" aria-label="Авторизация">
+        <div className="auth-card">
           <div className="card-topline"><span className="eyebrow">ДОСТУП К ПЛАТФОРМЕ</span><span className="small-lock" aria-hidden="true">▣</span></div>
           <h2>{page === 'login' ? 'С возвращением' : 'Создайте аккаунт'}</h2><p className="subtitle">{page === 'login' ? 'Войдите, чтобы продолжить работу.' : 'Ваш первый шаг к управлению инфраструктурой.'}</p>
           <nav className="auth-tabs" aria-label="Способ входа"><button type="button" className={page === 'login' ? 'selected' : ''} aria-current={page === 'login' ? 'page' : undefined} onClick={() => navigate('login')} disabled={busy}>Вход</button><button type="button" className={page === 'register' ? 'selected' : ''} aria-current={page === 'register' ? 'page' : undefined} onClick={() => navigate('register')} disabled={busy}>Регистрация</button></nav>
@@ -101,7 +110,7 @@ function App() {
             </fieldset>
           </form>
           <div className="card-footer">{page === 'login' ? 'Ещё нет аккаунта?' : 'Уже зарегистрированы?'} <button type="button" disabled={busy} onClick={() => navigate(page === 'login' ? 'register' : 'login')}>{page === 'login' ? 'Зарегистрироваться' : 'Войти'}</button></div>
-        </div>}
+        </div>
         <p className="access-note">SRE PLATFORM <span>/</span> Единая точка доступа</p>
       </section>
     </main>
