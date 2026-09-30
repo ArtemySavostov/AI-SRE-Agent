@@ -33,7 +33,6 @@ public class AuthController {
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(new ErrorResponse(exception.getMessage()));
         } catch (DataIntegrityViolationException exception) {
-            // The unique constraint also protects against simultaneous registrations.
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new ErrorResponse("Не удалось зарегистрироваться. Проверьте email и повторите попытку"));
         }

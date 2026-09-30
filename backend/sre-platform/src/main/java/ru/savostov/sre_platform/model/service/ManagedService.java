@@ -17,7 +17,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Service {
+public class ManagedService {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
