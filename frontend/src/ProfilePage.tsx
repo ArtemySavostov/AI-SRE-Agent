@@ -28,7 +28,7 @@ export default function ProfilePage({ user, busy, error, onSignOut }: ProfilePag
     <div className="profile-layout">
       <aside className="profile-sidebar">
         <div className="eyebrow">АККАУНТ</div>
-        <nav aria-label="Личный кабинет"><a href="/profile" className="profile-nav-current" aria-current="page"><span aria-hidden="true">◎</span> Мой профиль</a></nav>
+        <nav aria-label="Личный кабинет"><a href="/infrastructure" className="profile-nav-link"><span aria-hidden="true">▤</span> Инфраструктура</a><a href="/profile" className="profile-nav-current" aria-current="page"><span aria-hidden="true">◎</span> Мой профиль</a></nav>
         <div className="profile-sidebar-note">SRE Platform<br/><span>Ваше рабочее пространство</span></div>
       </aside>
       <main className="profile-main">
