@@ -9,7 +9,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ru.savostov.sre_platform.model.incident.Incident;
 import ru.savostov.sre_platform.model.integration.Integration;
-import ru.savostov.sre_platform.model.service.Service;
+import ru.savostov.sre_platform.model.service.ManagedService;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -28,7 +28,7 @@ public class Alert {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
+    private ManagedService managedService;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "integration_id", nullable = false)

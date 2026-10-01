@@ -7,7 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import ru.savostov.sre_platform.model.project.Project;
-import ru.savostov.sre_platform.model.service.Service;
+import ru.savostov.sre_platform.model.service.ManagedService;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -29,7 +29,7 @@ public class Incident {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
+    private ManagedService managedService;
 
     @Column(name = "title", nullable = false, length = 255)
     private String title;
