@@ -4,6 +4,7 @@ import { currentUser, login, logout, register } from './api'
 import type { User } from './api'
 import './App.css'
 import ProfilePage from './ProfilePage'
+import InfrastructurePage from './infrastructure/InfrastructurePage'
 
 type Page = 'login' | 'register'
 const initialPage = (): Page => window.location.pathname === '/register' ? 'register' : 'login'
@@ -25,7 +26,9 @@ function App() {
     currentUser().then(value => {
       if (!active) return
       setUser(value)
-      if (value) window.history.replaceState({}, '', '/profile')
+      if (value) {
+        if (!['/profile', '/infrastructure'].includes(window.location.pathname)) window.history.replaceState({}, '', '/infrastructure')
+      }
       else if (window.location.pathname !== '/register') {
         window.history.replaceState({}, '', '/login')
         setPage('login')
@@ -33,9 +36,14 @@ function App() {
     })
       .catch(() => { if (active) setError('Не удалось связаться с сервером. Формы доступны, но для входа нужен работающий backend.') })
       .finally(() => { if (active) setLoading(false) })
+    const onExpired = () => {
+      setUser(null); setPage('login'); setNotice('Сессия истекла. Войдите снова.'); setError('')
+      window.history.replaceState({}, '', '/login')
+    }
+    window.addEventListener('sre:session-expired', onExpired)
     const onPop = () => { window.location.reload() }
     window.addEventListener('popstate', onPop)
-    return () => { active = false; window.removeEventListener('popstate', onPop) }
+    return () => { active = false; window.removeEventListener('popstate', onPop); window.removeEventListener('sre:session-expired', onExpired) }
   }, [])
 
   function navigate(next: Page) {
@@ -62,10 +70,10 @@ function App() {
         window.history.replaceState({}, '', '/login')
         setNotice('Аккаунт создан. Войдите с вашим email и паролем.')
         const signedIn = await login(email, password)
-        setUser(signedIn); setNotice(''); window.history.replaceState({}, '', '/profile')
+        setUser(signedIn); setNotice(''); window.history.replaceState({}, '', '/infrastructure')
       } else {
         const signedIn = await login(email, password)
-        form.reset(); setUser(signedIn); window.history.replaceState({}, '', '/profile')
+        form.reset(); setUser(signedIn); window.history.replaceState({}, '', '/infrastructure')
       }
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Не удалось выполнить запрос.') }
     finally { setBusy(false) }
@@ -78,6 +86,7 @@ function App() {
   }
 
   if (loading) return <div className="app-shell"><main className="loading" role="status"><span className="spinner"/> Проверяем сессию…</main></div>
+  if (user && window.location.pathname === '/infrastructure') return <InfrastructurePage user={user} busy={busy} error={error} onSignOut={signOut}/>
   if (user) return <ProfilePage user={user} busy={busy} error={error} onSignOut={signOut}/>
 
   return <div className="app-shell">

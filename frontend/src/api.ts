@@ -10,11 +10,12 @@ export class ApiError extends Error {
   constructor(message: string, status: number) { super(message); this.status = status }
 }
 
-async function request(path: string, init?: RequestInit): Promise<Response> {
+export async function request(path: string, init?: RequestInit): Promise<Response> {
   let response: Response
   try {
-    response = await fetch(`/api/auth${path}`, { ...init, credentials: 'same-origin' })
-  } catch {
+    response = await fetch(path.startsWith('/api/') ? path : `/api/auth${path}`, { ...init, credentials: 'same-origin' })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error
     throw new ApiError('Нет соединения с сервером. Проверьте подключение и повторите попытку.', 0)
   }
   if (!response.ok) {
