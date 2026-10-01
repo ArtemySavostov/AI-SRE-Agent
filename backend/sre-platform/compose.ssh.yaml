@@ -1,0 +1,13 @@
+services:
+  backend:
+    environment:
+      SRE_SSH_KEYS_DIRECTORY: /run/sre-ssh
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - type: bind
+        source: ./backend/sre-platform/.local/ssh
+        target: /run/sre-ssh
+        read_only: true
+        bind:
+          create_host_path: false
