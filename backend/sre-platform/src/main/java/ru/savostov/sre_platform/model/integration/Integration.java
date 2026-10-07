@@ -9,13 +9,15 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import ru.savostov.sre_platform.model.project.Project;
+import ru.savostov.sre_platform.model.server.Server;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "integration")
+@Table(name = "integration", uniqueConstraints = @UniqueConstraint(
+        name = "uk_integration_server_type", columnNames = {"server_id", "type"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,6 +30,10 @@ public class Integration {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "server_id", nullable = false)
+    private Server server;
 
     @Column(name = "name", nullable = false, length = 255)
     private String name;
