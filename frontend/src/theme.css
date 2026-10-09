@@ -1,0 +1,116 @@
+/* Light palette. Existing declarations retain their original dark fallbacks. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --surface: #ffffff;
+  --surface-input: #f7f9fc;
+  --surface-raised: #eaf0f8;
+  --surface-success: #e6f5ed;
+  --surface-danger: #fcebed;
+  --border: #d4deeb;
+  --border-strong: #93a8c4;
+  --text-primary: #17263c;
+  --text-secondary: #435773;
+  --text-muted: #5b6e86;
+  --text-link: #225db3;
+  --text-success: #176444;
+  --text-danger: #a42b40;
+  --text-warning: #795411;
+  --accent: #2563eb;
+}
+
+/* Page surfaces, selected controls and accents. */
+:root[data-theme='light'] .app-shell {
+  background: radial-gradient(ellipse at 18% 50%, #e6eefb, transparent 55%), #f4f7fb;
+}
+:root[data-theme='light'] .profile-shell {
+  background: #f4f7fb;
+}
+:root[data-theme='light'] .topbar {
+  background: #fff;
+  border-color: var(--border);
+}
+:root[data-theme='light'] .primary-button,
+:root[data-theme='light'] .infra-button.accent {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+:root[data-theme='light'] .primary-button:hover,
+:root[data-theme='light'] .infra-button.accent:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+:root[data-theme='light'] .infra-project-list button.selected,
+:root[data-theme='light'] .infra-server-list button.selected,
+:root[data-theme='light'] .profile-nav-current {
+  background: #e8f0ff;
+  border-color: #7ba2e5;
+}
+:root[data-theme='light'] .auth-tabs button.selected {
+  background: #edf3ff;
+}
+:root[data-theme='light'] .auth-card {
+  box-shadow: 0 16px 48px #1b365d12;
+}
+:root[data-theme='light'] .monitoring-tooltip-row strong {
+  color: var(--text-primary);
+}
+
+/* Shared header control. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid var(--border, #344560);
+  background: var(--surface-raised, #18263c);
+  color: var(--text-primary, #e4edfa);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.theme-toggle:hover {
+  border-color: var(--text-link, #8ebaff);
+}
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+@media (max-width: 720px) {
+  .topbar {
+    gap: 12px;
+  }
+  .theme-toggle {
+    padding: 8px;
+  }
+  .theme-toggle span {
+    display: none;
+  }
+}
+
+:root[data-theme='light'] ::selection {
+  background: #c9ddff;
+  color: #17263c;
+}
+:root[data-theme='light'] .profile-status i {
+  background: #238660;
+}
+@media (max-width: 1000px) {
+  .topbar:has(.theme-toggle) .topbar-caption {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  .topbar:has(.theme-toggle) .edition {
+    display: none;
+  }
+  .theme-toggle {
+    margin-left: auto;
+  }
+  .topbar .profile-top-user {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
