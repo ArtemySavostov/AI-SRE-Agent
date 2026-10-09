@@ -3,23 +3,248 @@ import { activeJob } from './api'
 import type { DiscoveryJob } from './api'
 
 const date = (value: string) => new Date(value).toLocaleString('ru-RU')
-export default function DiscoveryView({ job, configured, onConfigure }: { job: DiscoveryJob | null; configured: boolean; onConfigure: () => void }) {
+export default function DiscoveryView({
+  job,
+  configured,
+  onConfigure,
+}: {
+  job: DiscoveryJob | null
+  configured: boolean
+  onConfigure: () => void
+}) {
   const [search, setSearch] = useState('')
   const [state, setState] = useState('all')
   const snapshot = job?.snapshot
-  const filtered = snapshot?.containers.filter(container => (state === 'all' || container.state === state) && [container.name, container.image, container.composeProject, container.composeService].filter(Boolean).join(' ').toLowerCase().includes(search.toLowerCase())) ?? []
-  return <>
-    {job && <div className="infra-job" role="status"><span className={`infra-badge ${job.status === 'FAILED' ? 'bad' : job.status === 'SUCCEEDED' ? 'good' : 'neutral'}`}>{({ QUEUED: 'В очереди', RUNNING: 'Собираем информацию', SUCCEEDED: 'Сбор завершён', FAILED: 'Ошибка сбора' })[job.status]}</span><span>Запуск: {date(job.requestedAt)}</span></div>}
-    {job?.status === 'FAILED' && <div className="message error" role="alert">{job.error || 'Не удалось собрать информацию о сервере.'}{job.errorCode && <small> Код: {job.errorCode}</small>}</div>}
-    {snapshot && (activeJob(job) || job?.status === 'FAILED') && <p className="infra-hint">Показан предыдущий успешный снимок от {date(snapshot.collectedAt)}.</p>}
-    {!snapshot ? <div className="infra-empty compact"><h3>{activeJob(job) ? 'Ожидаем первый снимок' : 'Данные ещё не собраны'}</h3><p>{configured ? 'Запустите discovery, чтобы получить информацию о Linux-сервере и Docker-контейнерах.' : 'Сначала настройте SSH-подключение к серверу.'}</p>{!configured && <button className="infra-button accent" onClick={onConfigure}>Настроить SSH</button>}</div> : <>
-      <div className="infra-section-heading"><h3>Снимок инфраструктуры</h3><small className="infra-muted">Собран: {date(snapshot.collectedAt)}</small></div>
-      <div className="infra-metrics">{[['CPU', `${snapshot.host.cpuCount} ядер`], ['Память', `${(snapshot.host.memoryBytes / 1024 ** 3).toFixed(1)} GiB`], ['Uptime', `${Math.floor(snapshot.host.uptimeSeconds / 86400)} д ${Math.floor(snapshot.host.uptimeSeconds % 86400 / 3600)} ч`], ['Контейнеры', String(snapshot.docker.containers)]].map(([label, value]) => <div key={label}><small>{label}</small><strong>{value}</strong></div>)}</div>
-      <div className="infra-facts"><div><h3>Linux · {snapshot.host.hostname}</h3><p>{snapshot.host.operatingSystem}</p><small>Ядро {snapshot.host.kernel} · {snapshot.host.architecture}</small></div><div><h3>Docker {snapshot.docker.version}</h3><p>{snapshot.docker.name} · {snapshot.docker.storageDriver}</p><small>Запущено: {snapshot.docker.running} · Остановлено: {snapshot.docker.stopped}</small></div></div>
-      <div className="infra-section-heading"><h3>Контейнеры <span className="infra-muted">{filtered.length} / {snapshot.containers.length}</span></h3></div>
-      <div className="infra-filters"><label>Поиск<input type="search" placeholder="Имя, образ или Compose-сервис" value={search} onChange={e => setSearch(e.target.value)}/></label><label>Состояние<select value={state} onChange={e => setState(e.target.value)}><option value="all">Все состояния</option>{[...new Set(snapshot.containers.map(container => container.state))].map(value => <option key={value} value={value}>{value}</option>)}</select></label></div>
-      {filtered.length ? <div className="infra-table-scroll"><table className="infra-table"><thead><tr><th>Контейнер / образ</th><th>Состояние</th><th>Compose</th><th>Порты и сети</th></tr></thead><tbody>{filtered.map(container => <tr key={container.id}><td><strong>{container.name}</strong><span className="infra-mono">{container.image}</span><details><summary>Подробнее</summary><p className="infra-mono">ID: {container.id}</p><p>Запуск: {container.startedAt && !container.startedAt.startsWith('0001') ? date(container.startedAt) : 'нет данных'}</p></details></td><td><span className={'infra-badge ' + (container.state === 'running' ? 'good' : 'neutral')}>{container.state}</span><small>Health: {container.health || 'нет healthcheck'}</small></td><td>{container.composeProject || '—'}<small>{container.composeService || '—'}</small></td><td>{container.ports.length ? container.ports.map((port, index) => <span className="infra-mono" key={index}>{port.hostPort ? `${port.hostIp || '*'}:${port.hostPort} → ` : ''}{port.containerPort}</span>) : <span>Порты не указаны</span>}{container.networks.map(network => <small key={network.name}>{network.name}{network.ipAddress ? ` · ${network.ipAddress}` : ''}</small>)}</td></tr>)}</tbody></table></div> : <div className="infra-empty compact"><h3>{snapshot.containers.length ? 'Нет совпадений' : 'Docker-контейнеров нет'}</h3>{snapshot.containers.length > 0 && <button className="infra-button" onClick={() => { setSearch(''); setState('all') }}>Сбросить фильтры</button>}</div>}
-      <p className="infra-muted infra-footnote">Данные на момент сбора. Для обновления запустите discovery повторно.</p>
-    </>}
-  </>
+  const filtered =
+    snapshot?.containers.filter(
+      (container) =>
+        (state === 'all' || container.state === state) &&
+        [container.name, container.image, container.composeProject, container.composeService]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+          .includes(search.toLowerCase()),
+    ) ?? []
+  return (
+    <>
+      {job && (
+        <div
+          className="infra-job"
+          role="status"
+        >
+          <span
+            className={`infra-badge ${job.status === 'FAILED' ? 'bad' : job.status === 'SUCCEEDED' ? 'good' : 'neutral'}`}
+          >
+            {
+              {
+                QUEUED: 'В очереди',
+                RUNNING: 'Собираем информацию',
+                SUCCEEDED: 'Сбор завершён',
+                FAILED: 'Ошибка сбора',
+              }[job.status]
+            }
+          </span>
+          <span>Запуск: {date(job.requestedAt)}</span>
+        </div>
+      )}
+      {job?.status === 'FAILED' && (
+        <div
+          className="message error"
+          role="alert"
+        >
+          {job.error || 'Не удалось собрать информацию о сервере.'}
+          {job.errorCode && <small> Код: {job.errorCode}</small>}
+        </div>
+      )}
+      {snapshot && (activeJob(job) || job?.status === 'FAILED') && (
+        <p className="infra-hint">
+          Показан предыдущий успешный снимок от {date(snapshot.collectedAt)}.
+        </p>
+      )}
+      {!snapshot ? (
+        <div className="infra-empty compact">
+          <h3>{activeJob(job) ? 'Ожидаем первый снимок' : 'Данные ещё не собраны'}</h3>
+          <p>
+            {configured
+              ? 'Запустите discovery, чтобы получить информацию о Linux-сервере и Docker-контейнерах.'
+              : 'Сначала настройте SSH-подключение к серверу.'}
+          </p>
+          {!configured && (
+            <button
+              className="infra-button accent"
+              onClick={onConfigure}
+            >
+              Настроить SSH
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="infra-section-heading">
+            <h3>Снимок инфраструктуры</h3>
+            <small className="infra-muted">Собран: {date(snapshot.collectedAt)}</small>
+          </div>
+          <div className="infra-metrics">
+            {[
+              ['CPU', `${snapshot.host.cpuCount} ядер`],
+              ['Память', `${(snapshot.host.memoryBytes / 1024 ** 3).toFixed(1)} GiB`],
+              [
+                'Uptime',
+                `${Math.floor(snapshot.host.uptimeSeconds / 86400)} д ${Math.floor((snapshot.host.uptimeSeconds % 86400) / 3600)} ч`,
+              ],
+              ['Контейнеры', String(snapshot.docker.containers)],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <small>{label}</small>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+          <div className="infra-facts">
+            <div>
+              <h3>Linux · {snapshot.host.hostname}</h3>
+              <p>{snapshot.host.operatingSystem}</p>
+              <small>
+                Ядро {snapshot.host.kernel} · {snapshot.host.architecture}
+              </small>
+            </div>
+            <div>
+              <h3>Docker {snapshot.docker.version}</h3>
+              <p>
+                {snapshot.docker.name} · {snapshot.docker.storageDriver}
+              </p>
+              <small>
+                Запущено: {snapshot.docker.running} · Остановлено: {snapshot.docker.stopped}
+              </small>
+            </div>
+          </div>
+          <div className="infra-section-heading">
+            <h3>
+              Контейнеры{' '}
+              <span className="infra-muted">
+                {filtered.length} / {snapshot.containers.length}
+              </span>
+            </h3>
+          </div>
+          <div className="infra-filters">
+            <label>
+              Поиск
+              <input
+                type="search"
+                placeholder="Имя, образ или Compose-сервис"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </label>
+            <label>
+              Состояние
+              <select
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+              >
+                <option value="all">Все состояния</option>
+                {[...new Set(snapshot.containers.map((container) => container.state))].map(
+                  (value) => (
+                    <option
+                      key={value}
+                      value={value}
+                    >
+                      {value}
+                    </option>
+                  ),
+                )}
+              </select>
+            </label>
+          </div>
+          {filtered.length ? (
+            <div className="infra-table-scroll">
+              <table className="infra-table">
+                <thead>
+                  <tr>
+                    <th>Контейнер / образ</th>
+                    <th>Состояние</th>
+                    <th>Compose</th>
+                    <th>Порты и сети</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((container) => (
+                    <tr key={container.id}>
+                      <td>
+                        <strong>{container.name}</strong>
+                        <span className="infra-mono">{container.image}</span>
+                        <details>
+                          <summary>Подробнее</summary>
+                          <p className="infra-mono">ID: {container.id}</p>
+                          <p>
+                            Запуск:{' '}
+                            {container.startedAt && !container.startedAt.startsWith('0001')
+                              ? date(container.startedAt)
+                              : 'нет данных'}
+                          </p>
+                        </details>
+                      </td>
+                      <td>
+                        <span
+                          className={
+                            'infra-badge ' + (container.state === 'running' ? 'good' : 'neutral')
+                          }
+                        >
+                          {container.state}
+                        </span>
+                        <small>Health: {container.health || 'нет healthcheck'}</small>
+                      </td>
+                      <td>
+                        {container.composeProject || '—'}
+                        <small>{container.composeService || '—'}</small>
+                      </td>
+                      <td>
+                        {container.ports.length ? (
+                          container.ports.map((port, index) => (
+                            <span
+                              className="infra-mono"
+                              key={index}
+                            >
+                              {port.hostPort ? `${port.hostIp || '*'}:${port.hostPort} → ` : ''}
+                              {port.containerPort}
+                            </span>
+                          ))
+                        ) : (
+                          <span>Порты не указаны</span>
+                        )}
+                        {container.networks.map((network) => (
+                          <small key={network.name}>
+                            {network.name}
+                            {network.ipAddress ? ` · ${network.ipAddress}` : ''}
+                          </small>
+                        ))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="infra-empty compact">
+              <h3>{snapshot.containers.length ? 'Нет совпадений' : 'Docker-контейнеров нет'}</h3>
+              {snapshot.containers.length > 0 && (
+                <button
+                  className="infra-button"
+                  onClick={() => {
+                    setSearch('')
+                    setState('all')
+                  }}
+                >
+                  Сбросить фильтры
+                </button>
+              )}
+            </div>
+          )}
+          <p className="infra-muted infra-footnote">
+            Данные на момент сбора. Для обновления запустите discovery повторно.
+          </p>
+        </>
+      )}
+    </>
+  )
 }
