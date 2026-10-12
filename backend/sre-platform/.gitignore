@@ -37,4 +37,5 @@ build/
 .env.*
 !.env.example
 .local/
-/docs
+/docs/*
+!/docs/loki-integration.md
