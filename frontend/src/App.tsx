@@ -53,7 +53,11 @@ function App() {
         if (!active) return
         setUser(value)
         if (value) {
-          if (!['/profile', '/infrastructure', '/logs'].includes(window.location.pathname))
+          if (
+            !['/profile', '/infrastructure', '/logs', '/monitoring'].includes(
+              window.location.pathname,
+            )
+          )
             window.history.replaceState({}, '', '/infrastructure')
         } else if (window.location.pathname !== '/register') {
           window.history.replaceState({}, '', '/login')
@@ -169,10 +173,12 @@ function App() {
         </main>
       </div>
     )
-  if (user && window.location.pathname === '/logs')
+  if (user && ['/logs', '/monitoring'].includes(window.location.pathname))
     return (
-      <Suspense fallback={<p role="status">Загружаем страницу логов…</p>}>
+      <Suspense fallback={<p role="status">Загружаем раздел проекта…</p>}>
         <LogsPage
+          key={window.location.pathname}
+          section={window.location.pathname === '/monitoring' ? 'monitoring' : 'logs'}
           user={user}
           busy={busy}
           error={error}

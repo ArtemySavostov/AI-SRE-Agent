@@ -654,3 +654,49 @@
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 }
+
+/* Project-owned pages: collapsible navigation shared by servers, metrics and logs. */
+.infra-project-tree {
+  display: grid;
+  gap: 8px;
+}
+.infra-project-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary, #aab8ce);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.infra-project-branch.active > .infra-project-toggle {
+  background: var(--surface-raised, #172c49);
+  border-color: var(--border, #315887);
+  color: var(--text-primary, #fff);
+}
+.infra-project-children {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 6px 16px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border, #315887);
+}
+.infra-project-children a {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--text-secondary, #aab8ce);
+  text-decoration: none;
+  font-size: 13px;
+}
+.infra-project-children a:hover,
+.infra-project-children a[aria-current='page'] {
+  background: var(--surface-raised, #172c49);
+  color: var(--text-primary, #fff);
+}

@@ -1,13 +1,12 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { activeJob, messageOf, read, write } from './api'
 import type { ConnectionTest, DiscoveryJob, ManagedService, Server, SshSettings } from './api'
 import { CreationDialog } from './Forms'
 import DiscoveryView from './DiscoveryView'
-const MonitoringView = lazy(() => import('./monitoring/MonitoringView'))
 
 const date = (value: string) => new Date(value).toLocaleString('ru-RU')
-type Tab = 'docker' | 'ssh' | 'services' | 'monitoring'
+type Tab = 'docker' | 'ssh' | 'services'
 type Draft = Omit<SshSettings, 'port'> & { port: string }
 export default function ServerDetails({
   base,
@@ -172,6 +171,14 @@ export default function ServerDetails({
           href={'/logs?' + new URLSearchParams({ project: server.projectId, server: server.id })}
         >
           Открыть логи ↗
+        </a>{' '}
+        <a
+          className="infra-button"
+          href={
+            '/monitoring?' + new URLSearchParams({ project: server.projectId, server: server.id })
+          }
+        >
+          Открыть мониторинг ↗
         </a>
       </p>
       <nav
@@ -182,7 +189,6 @@ export default function ServerDetails({
           [
             ['docker', 'Docker discovery'],
             ['ssh', 'SSH-подключение'],
-            ['monitoring', 'Мониторинг'],
             ['services', `Сервисы · ${services.length}`],
           ] as const
         ).map(([id, title]) => (
@@ -377,15 +383,6 @@ export default function ServerDetails({
             configured={!!ssh}
             onConfigure={() => setTab('ssh')}
           />
-        )}
-        {tab === 'monitoring' && (
-          <Suspense fallback={<p role="status">Загружаем мониторинг…</p>}>
-            <MonitoringView
-              projectId={server.projectId}
-              serverId={server.id}
-              sshConfigured={!!ssh}
-            />
-          </Suspense>
         )}
         {tab === 'services' && (
           <>
