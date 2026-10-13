@@ -74,6 +74,12 @@ export default function ProfilePage({ user, busy, error, onSignOut }: ProfilePag
             >
               <span aria-hidden="true">◎</span> Мой профиль
             </a>
+            <a
+              href="/logs"
+              className="profile-nav-link"
+            >
+              ≡ Логи
+            </a>
           </nav>
           <div className="profile-sidebar-note">
             SRE Platform

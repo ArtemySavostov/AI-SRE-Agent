@@ -44,7 +44,16 @@ public class IntegrationService {
 
     @Transactional
     public Integration createPrometheusIntegration(UUID projectId, UUID serverId, String name, String baseUrl) {
+        return createIntegration(projectId, serverId, name, baseUrl, Integration.IntegrationType.PROMETHEUS);
+    }
+
+    @Transactional
+    public Integration createIntegration(UUID projectId, UUID serverId, String name, String baseUrl,
+                                         Integration.IntegrationType type) {
         access.require(projectId);
+        if (type == null) type = Integration.IntegrationType.PROMETHEUS;
+        if (type != Integration.IntegrationType.PROMETHEUS && type != Integration.IntegrationType.LOKI)
+            throw new IllegalArgumentException("Поддерживаются PROMETHEUS и LOKI");
         if (serverId == null) throw new IllegalArgumentException("Укажите сервер");
         if (name == null || name.isBlank() || baseUrl == null || baseUrl.isBlank()) {
             throw new IllegalArgumentException("Заполните все поля");
@@ -55,17 +64,17 @@ public class IntegrationService {
                 .orElseThrow(() -> new NoSuchElementException("Проект не найден"));
         Server server = serverRepository.lockInProject(serverId, projectId)
                 .orElseThrow(() -> new NoSuchElementException("Сервер не найден в проекте"));
-        if (integrationRepository.findByServer_IdAndType(serverId, Integration.IntegrationType.PROMETHEUS).isPresent()) {
+        if (integrationRepository.findByServer_IdAndType(serverId, type).isPresent()) {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,
-                    "Для сервера уже существует Prometheus-интеграция; используйте PUT");
+                    "Для сервера уже существует интеграция " + type + "; используйте PUT");
         }
         Integration integration = new Integration();
         integration.setName(normalizedName);
         integration.setProject(project);
         integration.setServer(server);
         integration.setBaseUrl(baseUrl.strip());
-        integration.setType(Integration.IntegrationType.PROMETHEUS);
-        integration.setConfig(Map.of("nodeJob", "node-exporter", "nodeInstance", "node-exporter:9100",
+        integration.setType(type);
+        integration.setConfig(type == Integration.IntegrationType.LOKI ? Map.of() : Map.of("nodeJob", "node-exporter", "nodeInstance", "node-exporter:9100",
                 "containerJob", "cadvisor", "containerInstance", "cadvisor:8080"));
 
         return integrationRepository.save(integration);
@@ -92,6 +101,30 @@ public class IntegrationService {
         integration.setStatus(Integration.IntegrationStatus.DISCONNECTED);
         tunnels.invalidate(id);
         return integrationRepository.save(integration);
+    }
+
+    @Transactional(readOnly = true)
+    public Integration.IntegrationType type(UUID projectId, UUID id) {
+        access.require(projectId);
+        return integrationRepository.findById(id)
+                .filter(item -> item.getProject().getId().equals(projectId))
+                .orElseThrow(() -> new NoSuchElementException("Интеграция не найдена")).getType();
+    }
+
+    @Transactional
+    public Integration updateLokiIntegration(UUID projectId, UUID id, String name, String baseUrl) {
+        access.require(projectId);
+        validate(name, baseUrl);
+        Integration item = integrationRepository.findById(id)
+                .filter(i -> i.getProject().getId().equals(projectId))
+                .orElseThrow(() -> new NoSuchElementException("Интеграция не найдена"));
+        if (item.getType() != Integration.IntegrationType.LOKI)
+            throw new IllegalArgumentException("Требуется интеграция Loki");
+        item.setName(name.strip());
+        item.setBaseUrl(baseUrl.strip());
+        item.setStatus(Integration.IntegrationStatus.DISCONNECTED);
+        tunnels.invalidate(id);
+        return integrationRepository.save(item);
     }
 
     private void validate(String name, String baseUrl) {

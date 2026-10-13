@@ -53,8 +53,8 @@ public class IntegrationController {
         if (request.serverId() == null) {
             throw new IllegalArgumentException("Укажите сервер");
         }
-        Integration item = integrationService.createPrometheusIntegration(
-                projectId, request.serverId(), request.name(), request.baseUrl());
+        Integration item = integrationService.createIntegration(
+                projectId, request.serverId(), request.name(), request.baseUrl(), request.type());
         return ResponseEntity.status(HttpStatus.CREATED).body(new IntegrationResponse(
                 item.getId(), item.getName(), item.getType(), item.getBaseUrl(), item.getStatus(),
                 item.getServer().getId(), item.getConfig()));
@@ -63,7 +63,9 @@ public class IntegrationController {
     @PutMapping("/{integrationId}")
     public IntegrationResponse updateIntegration(@PathVariable UUID projectId, @PathVariable UUID integrationId,
             @RequestBody UpdateIntegrationRequest request) {
-        Integration item = integrationService.updatePrometheusIntegration(projectId, integrationId,
+        Integration item = integrationService.type(projectId, integrationId) == Integration.IntegrationType.LOKI
+                ? integrationService.updateLokiIntegration(projectId, integrationId, request.name(), request.baseUrl())
+                : integrationService.updatePrometheusIntegration(projectId, integrationId,
                 request.name(), request.baseUrl(), request.nodeJob(), request.nodeInstance(),
                 request.containerJob(), request.containerInstance());
         return new IntegrationResponse(item.getId(), item.getName(), item.getType(), item.getBaseUrl(),
@@ -83,7 +85,7 @@ public class IntegrationController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(exception.getMessage()));
     }
 
-    public record CreateIntegrationRequest(UUID serverId, String name, String baseUrl) {}
+    public record CreateIntegrationRequest(UUID serverId, String name, String baseUrl, Integration.IntegrationType type) {}
 
     public record ErrorResponse(String message) {}
 

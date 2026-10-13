@@ -166,6 +166,14 @@ export default function ServerDetails({
           {ssh ? 'сохраните изменения SSH-настроек' : 'настройте SSH-подключение'}.
         </p>
       )}
+      <p>
+        <a
+          className="infra-button"
+          href={'/logs?' + new URLSearchParams({ project: server.projectId, server: server.id })}
+        >
+          Открыть логи ↗
+        </a>
+      </p>
       <nav
         className="infra-tabs"
         aria-label="Разделы сервера"

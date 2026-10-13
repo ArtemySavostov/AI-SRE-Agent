@@ -1,6 +1,7 @@
 package ru.savostov.sre_platform.metrics;
 
 import jakarta.annotation.PreDestroy;
+import ru.savostov.sre_platform.transport.RemoteEndpoint;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
@@ -30,7 +31,11 @@ public class SshTunnelManager {
         cleaner.scheduleWithFixedDelay(this::expire, 30, 30, TimeUnit.SECONDS);
     }
 
-    public synchronized int port(UUID id, ConnectionSettings settings, PrometheusEndpoint endpoint) {
+    public int port(UUID id, ConnectionSettings settings, PrometheusEndpoint endpoint) {
+        return port(id, settings, new RemoteEndpoint(endpoint.host(), endpoint.port()));
+    }
+
+    public synchronized int port(UUID id, ConnectionSettings settings, RemoteEndpoint endpoint) {
         Tunnel current = tunnels.get(id);
         if (current != null && current.settings.equals(settings) && current.endpoint.equals(endpoint)
                 && current.ssh.isConnected() && current.thread.isAlive()) {
@@ -69,7 +74,7 @@ public class SshTunnelManager {
             socket = new ServerSocket(0, 32, InetAddress.getByName("127.0.0.1"));
             LocalPortForwarder forwarder = ssh.newLocalPortForwarder(
                     new Parameters("127.0.0.1", socket.getLocalPort(), endpoint.host(), endpoint.port()), socket);
-            Thread thread = Thread.ofVirtual().name("prometheus-tunnel-" + id).unstarted(() -> {
+            Thread thread = Thread.ofVirtual().name("integration-tunnel-" + id).unstarted(() -> {
                 try { forwarder.listen(); } catch (IOException ignored) { /* Recreated on the next request. */ }
             });
             Tunnel tunnel = new Tunnel(ssh, socket, forwarder, thread, settings, endpoint);
@@ -125,10 +130,10 @@ public class SshTunnelManager {
         final LocalPortForwarder forwarder;
         final Thread thread;
         final ConnectionSettings settings;
-        final PrometheusEndpoint endpoint;
+        final RemoteEndpoint endpoint;
         long used = System.nanoTime();
         Tunnel(SSHClient ssh, ServerSocket socket, LocalPortForwarder forwarder, Thread thread,
-               ConnectionSettings settings, PrometheusEndpoint endpoint) {
+               ConnectionSettings settings, RemoteEndpoint endpoint) {
             this.ssh = ssh; this.socket = socket; this.forwarder = forwarder; this.thread = thread;
             this.settings = settings; this.endpoint = endpoint;
         }
