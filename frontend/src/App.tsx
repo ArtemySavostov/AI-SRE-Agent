@@ -1,3 +1,5 @@
+import { lazy, Suspense } from 'react'
+const LogsPage = lazy(() => import('./infrastructure/loki/LogsPage'))
 import ThemeToggle from './ThemeToggle'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -51,7 +53,7 @@ function App() {
         if (!active) return
         setUser(value)
         if (value) {
-          if (!['/profile', '/infrastructure'].includes(window.location.pathname))
+          if (!['/profile', '/infrastructure', '/logs'].includes(window.location.pathname))
             window.history.replaceState({}, '', '/infrastructure')
         } else if (window.location.pathname !== '/register') {
           window.history.replaceState({}, '', '/login')
@@ -166,6 +168,17 @@ function App() {
           <span className="spinner" /> Проверяем сессию…
         </main>
       </div>
+    )
+  if (user && window.location.pathname === '/logs')
+    return (
+      <Suspense fallback={<p role="status">Загружаем страницу логов…</p>}>
+        <LogsPage
+          user={user}
+          busy={busy}
+          error={error}
+          onSignOut={signOut}
+        />
+      </Suspense>
     )
   if (user && window.location.pathname === '/infrastructure')
     return (

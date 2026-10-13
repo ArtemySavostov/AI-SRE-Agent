@@ -84,6 +84,12 @@ export default function InfrastructurePage({
             >
               ◎ Мой профиль
             </a>
+            <a
+              href="/logs"
+              className="profile-nav-link"
+            >
+              ≡ Логи
+            </a>
           </nav>
           <div className="infra-project-heading">
             <span className="eyebrow">ПРОЕКТЫ · {projects.data?.length ?? '—'}</span>

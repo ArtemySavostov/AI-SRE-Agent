@@ -1,0 +1,189 @@
+.infra-tabs {
+  overflow-x: auto;
+}
+.loki-view,
+.loki-results {
+  min-width: 0;
+}
+.loki-settings {
+  margin: 20px 0;
+}
+.loki-view summary {
+  cursor: pointer;
+  color: var(--text-link, #8ebaff);
+  padding: 8px 0;
+}
+.loki-settings form {
+  margin-top: 12px;
+}
+.loki-view .infra-actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+.loki-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.loki-filter-grid select {
+  width: 100%;
+  background: var(--surface-input, #0a1424);
+  color: var(--text-primary, #e4eaf5);
+  border: 1px solid var(--border, #344560);
+  border-radius: 7px;
+  padding: 10px;
+  font: inherit;
+}
+.loki-toolbar {
+  margin: 18px 0;
+}
+.loki-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.loki-toolbar input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 16px;
+}
+.loki-warning {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #d8a14a;
+  border-radius: 8px;
+  color: var(--text-warning, #ffca73);
+}
+.loki-result-meta {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0;
+  line-height: 1.5;
+  color: var(--text-secondary, #aab8ce);
+  overflow-wrap: anywhere;
+}
+.loki-result-meta p {
+  margin: 0;
+}
+.loki-view .infra-hint {
+  margin: 16px 0;
+}
+.loki-page {
+  padding: 24px 32px;
+  min-width: 0;
+}
+.loki-page > .loki-filter-grid {
+  margin: 16px 0;
+}
+.loki-page .loki-filter-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.loki-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+.loki-wrap input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+.loki-entries {
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #0c1422;
+  color: #dce5f2;
+  overflow: auto;
+  max-height: 75vh;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.loki-entry {
+  border-bottom: 1px solid #223047;
+  min-width: 0;
+}
+.loki-entry:last-child {
+  border-bottom: 0;
+}
+.loki-view .loki-row {
+  display: grid;
+  grid-template-columns: 190px 110px minmax(0, 1fr);
+  gap: 12px;
+  padding: 6px 12px;
+  color: #dce5f2;
+  cursor: pointer;
+  list-style: none;
+}
+.loki-row::-webkit-details-marker {
+  display: none;
+}
+.loki-row:hover,
+.loki-entry[open] > .loki-row {
+  background: #1b2a40;
+}
+.loki-row:focus-visible {
+  outline: 2px solid #78baff;
+  outline-offset: -2px;
+}
+.loki-row time {
+  color: #94a9c6;
+  white-space: nowrap;
+}
+.loki-stream {
+  color: #7dd3fc;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.loki-preview {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.loki-nowrap .loki-row {
+  grid-template-columns: 190px 110px max-content;
+}
+.loki-nowrap .loki-preview {
+  white-space: pre;
+}
+.loki-entry-details {
+  padding: 12px 20px;
+  border-top: 1px solid #334155;
+  overflow-wrap: anywhere;
+}
+.loki-entry-details h4 {
+  margin: 10px 0 4px;
+}
+.loki-entry-details pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 420px;
+  overflow: auto;
+  margin: 0 0 12px;
+  font: inherit;
+  tab-size: 2;
+}
+@media (max-width: 650px) {
+  .loki-filter-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .loki-page {
+    padding: 16px;
+  }
+  .loki-view .loki-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .loki-nowrap .loki-row {
+    grid-template-columns: max-content;
+  }
+}
