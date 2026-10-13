@@ -1,3 +1,4 @@
+import ProjectNavigation from './ProjectNavigation'
 import ThemeToggle from '../ThemeToggle'
 import { useCallback, useEffect, useState } from 'react'
 import type { User } from '../api'
@@ -84,12 +85,6 @@ export default function InfrastructurePage({
             >
               ◎ Мой профиль
             </a>
-            <a
-              href="/logs"
-              className="profile-nav-link"
-            >
-              ≡ Логи
-            </a>
           </nav>
           <div className="infra-project-heading">
             <span className="eyebrow">ПРОЕКТЫ · {projects.data?.length ?? '—'}</span>
@@ -123,24 +118,12 @@ export default function InfrastructurePage({
               </button>
             </div>
           )}
-          <div className="infra-project-list">
-            {projects.data?.map((project) => (
-              <button
-                key={project.id}
-                className={current?.id === project.id ? 'selected' : ''}
-                aria-pressed={current?.id === project.id}
-                onClick={() => select(project.id)}
-              >
-                <span
-                  className="infra-project-icon"
-                  aria-hidden="true"
-                >
-                  {project.name.slice(0, 1).toUpperCase()}
-                </span>
-                <span>{project.name}</span>
-              </button>
-            ))}
-          </div>
+          <ProjectNavigation
+            projects={projects.data ?? []}
+            currentId={current?.id}
+            section="infrastructure"
+            onSelect={select}
+          />
           <div className="infra-sidebar-bottom">
             <span className="infra-muted">
               {user.role === 'ADMIN' ? 'Администратор' : 'Инженер'}
