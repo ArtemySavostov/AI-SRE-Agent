@@ -421,6 +421,19 @@ export default function ServerDetails({
                       </span>
                     </div>
                     {service.description && <p>{service.description}</p>}
+                    <a
+                      className="infra-button"
+                      href={
+                        '/agent-sessions?' +
+                        new URLSearchParams({
+                          project: server.projectId,
+                          server: server.id,
+                          service: service.id,
+                        })
+                      }
+                    >
+                      Сессии агента
+                    </a>
                     <small>
                       Healthcheck:{' '}
                       <span className="infra-mono">{service.healthcheckUrl || 'не задан'}</span>

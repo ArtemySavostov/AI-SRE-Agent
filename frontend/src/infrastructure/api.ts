@@ -1,4 +1,4 @@
-import { ApiError, request } from '../api'
+import { ApiError, request } from '../api.ts'
 
 export interface Project {
   id: string

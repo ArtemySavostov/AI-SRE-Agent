@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 /docs
 /tests
+
+# Agent session regression tests and browser scenarios are deliverables.
+!/tests/
+/tests/*
+!/tests/agent-sessions.test.ts
+!/tests/agent-sessions-manual.md

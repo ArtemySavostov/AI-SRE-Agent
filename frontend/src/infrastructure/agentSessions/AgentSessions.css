@@ -1,0 +1,106 @@
+.agent-page {
+  padding: 32px;
+  min-width: 0;
+  color: var(--text-primary, #e4edfa);
+}
+.agent-warning {
+  padding: 16px;
+  border: 1px solid var(--text-warning, #ddb76e);
+  color: var(--text-warning, #ddb76e);
+  background: var(--surface, #101c30);
+  line-height: 1.6;
+}
+.agent-filter {
+  max-width: 600px;
+  margin: 16px 0;
+}
+.agent-toolbar {
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+.agent-columns {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr);
+  gap: 20px;
+  align-items: start;
+}
+.agent-card {
+  min-width: 0;
+  padding: 24px;
+  background: var(--surface, #101c30);
+  border: 1px solid var(--border, #293b55);
+  overflow-wrap: anywhere;
+}
+.agent-card h2 {
+  margin-top: 0;
+  font-size: 20px;
+}
+.agent-history,
+.agent-events {
+  list-style: none;
+  padding: 0;
+}
+.agent-history li,
+.agent-events li {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border, #293b55);
+}
+.agent-history p {
+  font-size: 13px;
+}
+.agent-history details {
+  margin: 12px 0;
+}
+.agent-history summary {
+  cursor: pointer;
+}
+.agent-facts {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(0, 2fr);
+  gap: 12px;
+  font-size: 14px;
+}
+.agent-facts dt,
+.agent-events time {
+  color: var(--text-muted, #91a0b8);
+}
+.agent-facts dd {
+  margin: 0;
+}
+.agent-events time,
+.agent-events strong {
+  display: block;
+  margin-bottom: 8px;
+}
+.agent-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.agent-page :is(button, select, summary, a):focus-visible {
+  outline: 2px solid var(--text-link, #8ebaff);
+  outline-offset: 3px;
+}
+.agent-history button[aria-pressed='true'] {
+  border-color: var(--text-link, #8ebaff);
+}
+@media (max-width: 1000px) {
+  .agent-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .agent-page {
+    padding: 20px 14px;
+  }
+  .agent-card {
+    padding: 16px;
+  }
+  .agent-facts {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .agent-facts dd {
+    margin-bottom: 10px;
+  }
+}
