@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Project } from './api'
 
-type Section = 'infrastructure' | 'monitoring' | 'logs'
+type Section = 'infrastructure' | 'monitoring' | 'logs' | 'agent-sessions'
 export default function ProjectNavigation({
   projects,
   currentId,
@@ -63,6 +63,7 @@ function ProjectBranch({
               ['infrastructure', 'Серверы'],
               ['monitoring', 'Мониторинг'],
               ['logs', 'Логи'],
+              ['agent-sessions', 'Сессии агента'],
             ] as const
           ).map(([route, title]) => (
             <a

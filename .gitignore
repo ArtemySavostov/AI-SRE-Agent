@@ -8,3 +8,16 @@ demo
 run.sh
 backend/sre-platform/docs
 backend/sre-platform/src/test/
+
+# Agent session tests are part of the delivered backend module.
+!backend/sre-platform/src/test/
+backend/sre-platform/src/test/*
+!backend/sre-platform/src/test/java/
+backend/sre-platform/src/test/java/*
+!backend/sre-platform/src/test/java/ru/
+backend/sre-platform/src/test/java/ru/*
+!backend/sre-platform/src/test/java/ru/savostov/
+backend/sre-platform/src/test/java/ru/savostov/*
+!backend/sre-platform/src/test/java/ru/savostov/sre_platform/
+backend/sre-platform/src/test/java/ru/savostov/sre_platform/*
+!backend/sre-platform/src/test/java/ru/savostov/sre_platform/agentSession/

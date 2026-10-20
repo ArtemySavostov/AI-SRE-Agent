@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+const AgentSessionsPage = lazy(() => import('./infrastructure/agentSessions/AgentSessionsPage'))
 const LogsPage = lazy(() => import('./infrastructure/loki/LogsPage'))
 import ThemeToggle from './ThemeToggle'
 import { useEffect, useState } from 'react'
@@ -54,7 +55,7 @@ function App() {
         setUser(value)
         if (value) {
           if (
-            !['/profile', '/infrastructure', '/logs', '/monitoring'].includes(
+            !['/profile', '/infrastructure', '/logs', '/monitoring', '/agent-sessions'].includes(
               window.location.pathname,
             )
           )
@@ -172,6 +173,17 @@ function App() {
           <span className="spinner" /> Проверяем сессию…
         </main>
       </div>
+    )
+  if (user && window.location.pathname === '/agent-sessions')
+    return (
+      <Suspense fallback={<p role="status">Загружаем сессии агента…</p>}>
+        <AgentSessionsPage
+          user={user}
+          busy={busy}
+          error={error}
+          onSignOut={signOut}
+        />
+      </Suspense>
     )
   if (user && ['/logs', '/monitoring'].includes(window.location.pathname))
     return (
