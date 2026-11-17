@@ -217,6 +217,48 @@ class AgentSessionTests {
             assertEquals(allowed, from.canTransitionTo(to), from + " -> " + to);
         }
     }
+    @Test void openRouterRunnerPersistsRealAnswer() throws Exception {
+        UUID id = service.create(serviceId).id();
+        var client = mock(OpenRouterClient.class);
+        when(client.model()).thenReturn("openrouter/free");
+        when(client.generate()).thenReturn("Проверить логи приложения");
+        doAnswer(call -> { new OpenRouterAgentSessionRunner(service, client).run(id); return null; }).when(runner).run(id);
+        service.start(id);
+        awaitStatus(id, COMPLETED);
+        assertEquals("Проверить логи приложения", service.get(id).summary());
+        assertTrue(service.events(id).stream().anyMatch(e -> e.message().contains("OpenRouter")));
+    }
+
+    @Test void cancellationDiscardsLateOpenRouterAnswer() throws Exception {
+        UUID id = service.create(serviceId).id();
+        var client = mock(OpenRouterClient.class);
+        when(client.model()).thenReturn("openrouter/free");
+        CountDownLatch requested = new CountDownLatch(1), proceed = new CountDownLatch(1), finished = new CountDownLatch(1);
+        when(client.generate()).thenAnswer(call -> { requested.countDown(); await(proceed); return "late answer"; });
+        doAnswer(call -> {
+            try { new OpenRouterAgentSessionRunner(service, client).run(id); }
+            finally { finished.countDown(); }
+            return null;
+        }).when(runner).run(id);
+        service.start(id);
+        try { assertTrue(requested.await(5, TimeUnit.SECONDS)); service.cancel(id); }
+        finally { proceed.countDown(); }
+        assertTrue(finished.await(5, TimeUnit.SECONDS));
+        assertEquals(CANCELLED, service.get(id).status());
+        assertNull(service.get(id).summary());
+        assertEquals(SESSION_CANCELLED, service.events(id).getLast().type());
+    }
+
+    @Test void openRouterFailureIsSavedInSession() throws Exception {
+        UUID id = service.create(serviceId).id();
+        var client = mock(OpenRouterClient.class);
+        when(client.generate()).thenThrow(new OpenRouterClient.Failure("Достигнут лимит запросов OpenRouter"));
+        doAnswer(call -> { new OpenRouterAgentSessionRunner(service, client).run(id); return null; }).when(runner).run(id);
+        service.start(id);
+        awaitStatus(id, FAILED);
+        assertEquals("Достигнут лимит запросов OpenRouter", service.get(id).errorMessage());
+    }
+
     private void awaitStatus(UUID id, ru.savostov.sre_platform.model.agentSession.AgentSessionStatus status) throws InterruptedException {
         long until = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
         while (service.get(id).status() != status && System.nanoTime() < until) Thread.sleep(10);

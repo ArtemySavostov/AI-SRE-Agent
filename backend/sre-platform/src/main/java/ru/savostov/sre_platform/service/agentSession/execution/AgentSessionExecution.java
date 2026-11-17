@@ -35,7 +35,7 @@ public class AgentSessionExecution {
         catch (Exception e) { fail(id, e); }
     }
     private void fail(UUID id, Exception error) {
-        log.error("Agent session {} execution failed", id, error);
+        log.error("Agent session {} execution failed ({})", id, error.getClass().getSimpleName());
         service.fail(id, "Не удалось выполнить тестовый запуск агента");
     }
     @EventListener(ApplicationReadyEvent.class)

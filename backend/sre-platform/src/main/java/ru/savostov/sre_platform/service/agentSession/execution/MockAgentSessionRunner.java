@@ -6,6 +6,7 @@ import ru.savostov.sre_platform.service.agentSession.AgentSessionService;
 import java.util.UUID;
 
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "sre.agent-session.provider", havingValue = "mock", matchIfMissing = true)
 public class MockAgentSessionRunner implements AgentSessionRunner {
     private final AgentSessionService service;
     private final long delayMillis;

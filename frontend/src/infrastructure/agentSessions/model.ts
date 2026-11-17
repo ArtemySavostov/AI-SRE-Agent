@@ -42,7 +42,7 @@ export const statusNames: Record<AgentSessionStatus, string> = {
 export const eventNames: Record<AgentEventType, string> = {
   SESSION_CREATED: 'Сессия создана',
   SESSION_STARTED: 'Сессия запущена',
-  DIAGNOSTIC_STARTED: 'Начало диагностики',
+  DIAGNOSTIC_STARTED: 'Этап выполнения',
   METRICS_COLLECTED: 'Метрики собраны',
   LOGS_COLLECTED: 'Логи собраны',
   HYPOTHESIS_GENERATED: 'Гипотеза сформирована',
