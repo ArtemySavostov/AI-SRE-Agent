@@ -31,7 +31,7 @@ public class AgentSessionService {
     @Transactional
     public SessionResponse create(UUID serviceId) {
         AgentSession session = sessions.saveAndFlush(new AgentSession(authorizedService(serviceId)));
-        append(session, SESSION_CREATED, "Сессия создана. Исполнитель: mock; реальная диагностика не выполняется.");
+        append(session, SESSION_CREATED, "Сессия создана. Тестовая задача: подготовить план диагностики без доступа к инфраструктуре.");
         return SessionResponse.from(session);
     }
 
@@ -39,7 +39,7 @@ public class AgentSessionService {
     public SessionResponse start(UUID id) {
         AgentSession session = authorizedSession(id, true);
         if (session.getStatus() != PENDING) throw new IllegalStateException("Запуск возможен только из PENDING");
-        transition(session, RUNNING, SESSION_STARTED, "Mock-исполнение запущено", null, null);
+        transition(session, RUNNING, SESSION_STARTED, "Тестовое исполнение запущено", null, null);
         publisher.publishEvent(new StartRequested(id));
         return SessionResponse.from(session);
     }
@@ -64,9 +64,22 @@ public class AgentSessionService {
     // Internal worker operations: every stage uses a short, independent transaction and the same row lock as the API.
     @Transactional
     public boolean recordMockStage(UUID id, String message) {
+        return recordStage(id, message);
+    }
+
+    @Transactional
+    public boolean recordStage(UUID id, String message) {
         AgentSession session = locked(id);
         if (session.getStatus() != RUNNING) return false;
         append(session, DIAGNOSTIC_STARTED, message);
+        return true;
+    }
+
+    @Transactional
+    public boolean complete(UUID id, String summary) {
+        AgentSession session = locked(id);
+        if (session.getStatus() != RUNNING) return false;
+        transition(session, COMPLETED, SESSION_COMPLETED, "Ответ модели получен. Тестовый запуск завершён", summary, null);
         return true;
     }
 
